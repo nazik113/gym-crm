@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Meal, NutritionPlan};
+use App\Services\NotificationService;
 use Illuminate\Http\{JsonResponse, Request};
 
 class NutritionController extends Controller
@@ -43,6 +44,14 @@ class NutritionController extends Controller
 
         $data['trainer_id'] = $request->user()->id;
         $plan = NutritionPlan::create($data);
+
+        $trainer = $request->user();
+        NotificationService::notifyClient(
+            $data['client_id'],
+            "{$trainer->first_name} {$trainer->last_name} создал план питания: {$data['title']}",
+            'nutrition'
+        );
+
         return response()->json($plan->load(['client:id,first_name,last_name', 'trainer:id,first_name,last_name']), 201);
     }
 

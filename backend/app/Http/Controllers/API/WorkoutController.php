@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Exercise, WorkoutDay, WorkoutPlan};
+use App\Services\NotificationService;
 use Illuminate\Http\{JsonResponse, Request};
 
 class WorkoutController extends Controller
@@ -41,6 +42,14 @@ class WorkoutController extends Controller
 
         $data['trainer_id'] = $request->user()->id;
         $plan = WorkoutPlan::create($data);
+
+        $trainer = $request->user();
+        NotificationService::notifyClient(
+            $data['client_id'],
+            "{$trainer->first_name} {$trainer->last_name} создал план тренировок: {$data['title']}",
+            'workout'
+        );
+
         return response()->json($plan->load(['client:id,first_name,last_name', 'trainer:id,first_name,last_name']), 201);
     }
 

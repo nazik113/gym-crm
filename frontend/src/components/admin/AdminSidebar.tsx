@@ -40,7 +40,7 @@ export function AdminSidebar() {
   return (
     <motion.aside
       initial={{ x: -280 }} animate={{ x: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-64 h-screen bg-graphite-800 border-r border-white/5 flex flex-col flex-shrink-0"
+      className="hidden md:flex w-64 h-screen bg-graphite-800 border-r border-white/5 flex-col flex-shrink-0"
     >
       {/* Logo */}
       <div className="p-6 border-b border-white/5">

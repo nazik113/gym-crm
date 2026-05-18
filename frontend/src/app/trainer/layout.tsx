@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/auth'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useSocket } from '@/lib/hooks/useSocket'
-import { LayoutDashboard, Users, Dumbbell, Apple, QrCode, BarChart3, StickyNote, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, Dumbbell, Apple, QrCode, BarChart3, StickyNote, LogOut, Menu, X, User } from 'lucide-react'
 import { authApi } from '@/lib/api/auth'
 
 const NAV = [
@@ -18,6 +18,15 @@ const NAV = [
   { href: '/trainer/scanner',   label: 'QR Scanner',  icon: QrCode },
   { href: '/trainer/stats',     label: 'Statistics',  icon: BarChart3 },
   { href: '/trainer/notes',     label: 'Notes',       icon: StickyNote },
+  { href: '/trainer/profile',   label: 'My Profile',  icon: User },
+]
+
+const BOTTOM_NAV = [
+  { href: '/trainer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/trainer/clients',   label: 'Clients',   icon: Users },
+  { href: '/trainer/workouts',  label: 'Workouts',  icon: Dumbbell },
+  { href: '/trainer/nutrition', label: 'Nutrition', icon: Apple },
+  { href: '/trainer/profile',   label: 'Profile',   icon: User },
 ]
 
 export default function TrainerLayout({ children }: { children: React.ReactNode }) {
@@ -26,23 +35,33 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname()
   const logout = useAuthStore(s => s.logout)
   const [hydrated, setHydrated] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   useSocket()
 
   useEffect(() => { setHydrated(true) }, [])
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   useEffect(() => {
     if (!hydrated) return
-    if (!isAuthenticated || !['admin','trainer'].includes(user?.role?.name ?? '')) router.replace('/auth/login')
+    if (!isAuthenticated || !['admin', 'trainer'].includes(user?.role?.name ?? '')) router.replace('/auth/login')
   }, [hydrated, isAuthenticated, user])
 
   if (!hydrated || !isAuthenticated) return null
 
-  const handleLogout = async () => { await authApi.logout().catch(() => {}); logout(); router.replace('/auth/login') }
+  const handleLogout = async () => {
+    await authApi.logout().catch(() => {})
+    logout()
+    router.replace('/auth/login')
+  }
 
   return (
     <div className="flex h-screen bg-graphite-900 overflow-hidden">
-      <motion.aside initial={{ x: -260 }} animate={{ x: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-60 h-screen bg-graphite-800 border-r border-white/5 flex flex-col flex-shrink-0">
+
+      {/* ── Desktop Sidebar ─────────────────────────────── */}
+      <motion.aside
+        initial={{ x: -260 }} animate={{ x: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="hidden md:flex w-60 h-screen bg-graphite-800 border-r border-white/5 flex-col flex-shrink-0"
+      >
         <div className="p-5 border-b border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
@@ -54,6 +73,7 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
             </div>
           </div>
         </div>
+
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href)
@@ -70,22 +90,113 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
             )
           })}
         </nav>
+
         <div className="p-4 border-t border-white/5">
           <div className="flex items-center gap-3 mb-3 px-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">
               {user?.first_name?.[0]}{user?.last_name?.[0]}
             </div>
-            <div className="min-w-0"><p className="text-sm font-medium truncate">{user?.full_name}</p><p className="text-xs text-muted-foreground">Trainer</p></div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{user?.first_name} {user?.last_name}</p>
+              <p className="text-xs text-muted-foreground">Trainer</p>
+            </div>
           </div>
           <button onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all w-full">
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all w-full">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>
       </motion.aside>
+
+      {/* ── Mobile Header ───────────────────────────────── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-graphite-800/95 backdrop-blur-sm border-b border-white/5 flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+            <Dumbbell className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-sm font-bold">GymCRM</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">
+            {user?.first_name?.[0]}{user?.last_name?.[0]}
+          </div>
+          <button onClick={() => setMobileOpen(!mobileOpen)}
+            className="w-9 h-9 rounded-xl bg-graphite-700 flex items-center justify-center border border-white/8">
+            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Mobile Drawer ───────────────────────────────── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMobileOpen(false)} />
+            <motion.div
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="md:hidden fixed top-0 right-0 bottom-0 z-40 w-64 bg-graphite-800 border-l border-white/5 flex flex-col pt-14">
+              <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+                {NAV.map(({ href, label, icon: Icon }) => {
+                  const active = pathname.startsWith(href)
+                  return (
+                    <Link key={href} href={href}>
+                      <div className={cn(
+                        'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all',
+                        active ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                      )}>
+                        <Icon className={cn('w-4 h-4', active ? 'text-cyan-400' : '')} />
+                        {label}
+                      </div>
+                    </Link>
+                  )
+                })}
+              </nav>
+              <div className="p-4 border-t border-white/5">
+                <div className="flex items-center gap-3 mb-3 px-1">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">
+                    {user?.first_name?.[0]}{user?.last_name?.[0]}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{user?.first_name} {user?.last_name}</p>
+                    <p className="text-xs text-muted-foreground">Trainer</p>
+                  </div>
+                </div>
+                <button onClick={handleLogout}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition-all w-full">
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Main Content ───────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-auto">
-        <div className="flex-1 p-6 lg:p-8">{children}</div>
+        <div className="md:hidden h-14 flex-shrink-0" />
+        <div className="flex-1 p-4 md:p-6 lg:p-8 pb-24 md:pb-8">{children}</div>
       </main>
+
+      {/* ── Mobile Bottom Nav ──────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-graphite-800/95 backdrop-blur-sm border-t border-white/5 flex">
+        {BOTTOM_NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname.startsWith(href)
+          return (
+            <Link key={href} href={href} className="flex-1">
+              <div className={cn(
+                'flex flex-col items-center justify-center py-2 gap-0.5 transition-all',
+                active ? 'text-cyan-400' : 'text-muted-foreground'
+              )}>
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{label}</span>
+              </div>
+            </Link>
+          )
+        })}
+      </nav>
     </div>
   )
 }

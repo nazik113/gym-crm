@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Note, User};
+use App\Services\NotificationService;
 use Illuminate\Http\{JsonResponse, Request};
 
 class NoteController extends Controller
@@ -33,6 +34,13 @@ class NoteController extends Controller
             'client_id' => $client->id,
             'author_id' => $request->user()->id,
         ]);
+
+        $author = $request->user();
+        NotificationService::notifyClient(
+            $client->id,
+            "{$author->first_name} {$author->last_name} добавил заметку: " . ($data['title'] ?? substr($data['content'], 0, 50)),
+            'note'
+        );
 
         return response()->json($note->load('author:id,first_name,last_name'), 201);
     }

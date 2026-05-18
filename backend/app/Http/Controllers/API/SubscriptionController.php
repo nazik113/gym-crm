@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Subscription, User};
+use App\Services\NotificationService;
 use Illuminate\Http\{JsonResponse, Request};
 
 class SubscriptionController extends Controller
@@ -90,6 +91,12 @@ class SubscriptionController extends Controller
             'notes'              => $data['notes'] ?? null,
         ]);
 
+        NotificationService::notifyClient(
+            $client->id,
+            "Вам назначен абонемент: {$plan->name}",
+            'subscription'
+        );
+
         return response()->json($sub->load(['user:id,first_name,last_name', 'plan']), 201);
     }
 
@@ -105,7 +112,13 @@ class SubscriptionController extends Controller
         if ($sub->sessions_remaining !== null && $sub->sessions_remaining > 0) {
             $sub->decrement('sessions_remaining');
         }
-        return response()->json($sub->fresh());
+        $fresh = $sub->fresh();
+        NotificationService::notifyClient(
+            $sub->user_id,
+            'Занятие списано. Осталось: ' . ($fresh->sessions_remaining ?? 0),
+            'session'
+        );
+        return response()->json($fresh);
     }
 
     public function cancel(Subscription $sub): JsonResponse

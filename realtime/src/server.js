@@ -18,6 +18,24 @@ app.use(express.json());
 // Health check
 app.get('/health', (_, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
+// Internal notify endpoint — called by Laravel backend
+app.post('/internal/notify', (req, res) => {
+  const secret = process.env.REALTIME_INTERNAL_SECRET || 'gymcrm-internal';
+  if (req.headers['x-internal-token'] !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { userId, message, type = 'info' } = req.body;
+  if (!userId || !message) {
+    return res.status(400).json({ error: 'userId and message required' });
+  }
+  io.to(`user:${userId}`).emit('notification:received', {
+    message,
+    type,
+    timestamp: new Date().toISOString(),
+  });
+  res.json({ ok: true });
+});
+
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {

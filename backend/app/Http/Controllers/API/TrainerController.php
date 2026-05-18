@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Role, User};
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class TrainerController extends Controller
 {
@@ -97,5 +98,38 @@ class TrainerController extends Controller
             ->get();
 
         return response()->json(['data' => $clients]);
+    }
+
+    public function myProfile(Request $request): JsonResponse
+    {
+        $user = $request->user()
+            ->load('role')
+            ->loadCount('clients');
+
+        return response()->json($user);
+    }
+
+    public function updateMyProfile(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'first_name'    => 'sometimes|string|max:100',
+            'last_name'     => 'sometimes|string|max:100',
+            'date_of_birth' => 'nullable|date',
+        ]);
+
+        $request->user()->update($data);
+
+        return response()->json($request->user()->fresh()->load('role')->loadCount('clients'));
+    }
+
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate(['avatar' => 'required|image|max:2048']);
+
+        $user = $request->user();
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => '/storage/' . $path]);
+
+        return response()->json(['avatar' => $user->avatar]);
     }
 }

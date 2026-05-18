@@ -82,6 +82,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Trainer routes ───────────────────────────────────────
     Route::middleware('role:admin,trainer')->group(function () {
         Route::get('my-clients', [TrainerController::class, 'myClients']);
+        Route::get('trainer/profile', [TrainerController::class, 'myProfile']);
+        Route::patch('trainer/profile', [TrainerController::class, 'updateMyProfile']);
+        Route::post('trainer/profile/avatar', [TrainerController::class, 'uploadAvatar']);
 
         // Workouts
         Route::apiResource('workout-plans', WorkoutController::class);

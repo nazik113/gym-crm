@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { authApi } from '@/lib/api/auth'
+import { useSocket } from '@/lib/hooks/useSocket'
+import { Toaster } from 'react-hot-toast'
 import { QrCode, Calendar, Dumbbell, Apple, Ruler, LogOut, User, Menu, X } from 'lucide-react'
 
 const NAV = [
@@ -34,6 +36,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const logout = useAuthStore(s => s.logout)
   const [hydrated, setHydrated] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  useSocket()
 
   useEffect(() => { setHydrated(true) }, [])
   useEffect(() => { setMobileOpen(false) }, [pathname])
@@ -187,6 +190,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <div className="md:hidden h-14 flex-shrink-0" />
         <div className="flex-1 p-4 md:p-6 lg:p-8 pb-24 md:pb-8">{children}</div>
       </main>
+
+      {/* ── Toast Notifications ────────────────────────── */}
+      <Toaster position="top-right" />
 
       {/* ── Mobile Bottom Nav ──────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-graphite-800/95 backdrop-blur-sm border-t border-white/5 flex">
