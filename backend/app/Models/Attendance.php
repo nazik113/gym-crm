@@ -5,6 +5,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo};
 
 class Attendance extends Model
 {
+    protected $table = 'attendance';
+
     protected $fillable = [
         'user_id','subscription_id','checked_in_by','check_in_method',
         'checked_in_at','checked_out_at','duration_minutes',

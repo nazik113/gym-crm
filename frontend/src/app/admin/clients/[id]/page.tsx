@@ -143,13 +143,13 @@ export default function AdminClientDetailPage() {
 
   const markEnterGym = useMutation({
     mutationFn: () => presenceApi.enter(clientId),
-    onSuccess: () => { toast.success('Client marked as in gym'); qc.invalidateQueries({ queryKey: ['client', clientId] }) },
+    onSuccess: () => { toast.success('Client marked as in gym'); qc.invalidateQueries({ queryKey: ['client', clientId] }); qc.invalidateQueries({ queryKey: ['presence'] }); qc.invalidateQueries({ queryKey: ['dashboard'] }) },
     onError: (e: any) => toast.error(e.response?.data?.message ?? 'Failed'),
   })
 
   const markLeaveGym = useMutation({
     mutationFn: () => presenceApi.leave(clientId),
-    onSuccess: () => { toast.success('Client marked as left gym'); qc.invalidateQueries({ queryKey: ['client', clientId] }) },
+    onSuccess: () => { toast.success('Client marked as left gym'); qc.invalidateQueries({ queryKey: ['client', clientId] }); qc.invalidateQueries({ queryKey: ['presence'] }); qc.invalidateQueries({ queryKey: ['dashboard'] }) },
     onError: (e: any) => toast.error(e.response?.data?.message ?? 'Failed'),
   })
 

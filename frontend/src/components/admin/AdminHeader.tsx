@@ -1,12 +1,14 @@
 'use client'
 import { useAuthStore } from '@/lib/stores/auth'
 import { usePresenceStore } from '@/lib/stores/presence'
+import { usePresence } from '@/lib/hooks/usePresence'
 import { motion } from 'framer-motion'
 import { Users, Bell, Search } from 'lucide-react'
 
 export function AdminHeader() {
   const user = useAuthStore(s => s.user)
   const count = usePresenceStore(s => s.count)
+  usePresence() // keep store in sync on every page
 
   return (
     <header className="h-16 bg-graphite-800/50 border-b border-white/5 flex items-center justify-between px-6 flex-shrink-0 backdrop-blur-sm">

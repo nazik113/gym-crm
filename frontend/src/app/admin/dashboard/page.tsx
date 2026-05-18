@@ -29,7 +29,7 @@ export default function AdminDashboard() {
           <>
             <StatCard label="Total Clients"        value={stats?.total_clients ?? 0}        icon={Users}         color="purple" delay={0}    />
             <StatCard label="Active Subscriptions" value={stats?.active_subscriptions ?? 0} icon={CreditCard}    color="cyan"   delay={0.05} />
-            <StatCard label="Monthly Revenue"      value={`$${(stats?.monthly_revenue ?? 0).toFixed(0)}`} icon={DollarSign} color="green" delay={0.1} />
+            <StatCard label="Monthly Revenue"      value={`$${Number(stats?.monthly_revenue ?? 0).toFixed(0)}`} icon={DollarSign} color="green" delay={0.1} />
             <StatCard label="In Gym Right Now"     value={stats?.clients_in_gym ?? 0}       icon={Radio}         color="orange" delay={0.15} />
             <StatCard label="Today's Attendance"   value={stats?.today_attendance ?? 0}     icon={CalendarCheck} color="purple" delay={0.2}  />
             <StatCard label="Month Attendance"     value={stats?.month_attendance ?? 0}     icon={Activity}      color="cyan"   delay={0.25} />

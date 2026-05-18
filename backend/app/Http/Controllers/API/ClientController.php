@@ -98,8 +98,31 @@ class ClientController extends Controller
 
     public function myProfile(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['role', 'trainer:id,first_name,last_name', 'activeSubscription.plan']);
+        $user = $request->user()->load(['role', 'trainer:id,first_name,last_name,phone', 'activeSubscription.plan']);
         return response()->json($user);
+    }
+
+    public function updateMyProfile(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'first_name'    => 'sometimes|string|max:100',
+            'last_name'     => 'sometimes|string|max:100',
+            'date_of_birth' => 'nullable|date',
+        ]);
+
+        $request->user()->update($data);
+        return response()->json($request->user()->fresh()->load(['role', 'trainer:id,first_name,last_name', 'activeSubscription.plan']));
+    }
+
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate(['avatar' => 'required|image|max:2048']);
+
+        $user = $request->user();
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => '/storage/' . $path]);
+
+        return response()->json(['avatar' => $user->avatar]);
     }
 
     public function mySubscription(Request $request): JsonResponse

@@ -101,6 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Client (self) routes ─────────────────────────────────
     Route::middleware('role:client')->group(function () {
         Route::get('my/profile', [ClientController::class, 'myProfile']);
+        Route::patch('my/profile', [ClientController::class, 'updateMyProfile']);
+        Route::post('my/profile/avatar', [ClientController::class, 'uploadAvatar']);
         Route::get('my/qr', [QRController::class, 'myQR']);
         Route::get('my/subscription', [ClientController::class, 'mySubscription']);
         Route::get('my/attendance', [ClientController::class, 'myAttendance']);

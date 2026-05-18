@@ -24,7 +24,7 @@ class NoteController extends Controller
         $data = $request->validate([
             'title'      => 'nullable|string|max:200',
             'content'    => 'required|string',
-            'type'       => 'sometimes|in:general,medical,training,nutrition',
+            'type'       => 'sometimes|in:general,health,progress,warning,medical,training,nutrition',
             'is_private' => 'boolean',
         ]);
 
